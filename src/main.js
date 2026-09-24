@@ -66,12 +66,15 @@ document.querySelectorAll('.project-card').forEach(card => {
     cursorText.textContent = 'VIEW';
     cursorText.classList.remove('opacity-0');
   });
-  card.addEventListener('mouseleave', () => {
-    disc.classList.remove('w-16', 'h-16', 'bg-on-tertiary-container', 'border-transparent');
-    cursorText.classList.add('opacity-0');
-    cursorText.textContent = '';
-  });
+  card.addEventListener('mouseleave', resetCursorHover);
 });
+
+function resetCursorHover() {
+  if (!disc) return;
+  disc.classList.remove('w-16', 'h-16', 'bg-on-tertiary-container', 'border-transparent');
+  cursorText.classList.add('opacity-0');
+  cursorText.textContent = '';
+}
 
 // 3. Project Filter Tabs
 window.filterProjects = function(category) {
@@ -211,6 +214,8 @@ window.openDrawer = function(key) {
     pill.textContent = tech;
     stackContainer.appendChild(pill);
   });
+
+  resetCursorHover();
 
   const backdrop = document.getElementById('case-drawer-backdrop');
   const drawer = document.getElementById('case-drawer');
