@@ -279,11 +279,59 @@ window.selectBudget = function(btn) {
   btn.classList.add('bg-on-tertiary-container', 'text-on-background', 'border-on-tertiary-container');
 };
 
-window.handleBriefSubmit = function(e) {
+function resetChips() {
+  document.querySelectorAll('.type-chip, .budget-chip').forEach(b => {
+    b.classList.remove('bg-on-tertiary-container', 'text-on-background', 'border-on-tertiary-container');
+    b.classList.add('bg-surface', 'border-outline-variant/40');
+  });
+}
+
+const chipValue = (selector) =>
+  document.querySelector(`${selector}.bg-on-tertiary-container`)?.textContent.trim() || '';
+
+window.handleBriefSubmit = async function(e) {
   e.preventDefault();
+  const form = e.target;
+  const submitBtn = document.getElementById('brief-submit');
   const successBox = document.getElementById('form-success');
-  successBox.classList.remove('hidden');
-  document.getElementById('project-brief-form').reset();
+  const errorBox = document.getElementById('form-error');
+  const value = (id) => document.getElementById(id).value.trim();
+
+  successBox.classList.add('hidden');
+  errorBox.classList.add('hidden');
+  const label = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'TRANSMITTING…';
+
+  try {
+    const res = await fetch('/api/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: value('client-name'),
+        email: value('client-email'),
+        company: value('client-company'),
+        timeline: value('client-timeline'),
+        type: chipValue('.type-chip'),
+        budget: chipValue('.budget-chip'),
+        message: value('client-message'),
+        website: value('client-website'),
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) throw new Error(data.error || 'Could not send your brief.');
+
+    successBox.classList.remove('hidden');
+    form.reset();
+    resetChips();
+  } catch (err) {
+    document.getElementById('form-error-text').textContent =
+      `${err.message} You can also reach us at creoviain@gmail.com.`;
+    errorBox.classList.remove('hidden');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = label;
+  }
 };
 
 // 7. Clipboard Helper
